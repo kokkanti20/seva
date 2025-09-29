@@ -1,0 +1,74 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>ElderCare AI - Home</title>
+  <style>
+    body {
+      font-family: Arial, sans-serif;
+      background: #f9fbff;
+      margin: 0;
+      padding: 0;
+      display: flex;
+      flex-direction: column;
+      min-height: 100vh;
+    }
+    header {
+      background: #0077cc;
+      color: white;
+      padding: 1.5rem;
+      text-align: center;
+    }
+    nav {
+      display: grid;
+      grid-template-columns: repeat(2, 1fr);
+      gap: 1rem;
+      padding: 1rem;
+      flex-grow: 1;
+    }
+    nav a {
+      display: block;
+      background: white;
+      border-radius: 12px;
+      padding: 2rem;
+      text-align: center;
+      text-decoration: none;
+      color: #0077cc;
+      font-weight: bold;
+      font-size: 1.2rem;
+      box-shadow: 0 4px 6px rgba(0,0,0,0.1);
+      transition: 0.2s;
+    }
+    nav a:hover {
+      background: #0077cc;
+      color: white;
+      transform: scale(1.05);
+    }
+    footer {
+      text-align: center;
+      padding: 1rem;
+      background: #eee;
+    }
+  </style>
+</head>
+<body>
+  <header>
+    <h1>ElderCare AI</h1>
+    <p>Reminders • Caregiver Support • Safety</p>
+  </header>
+
+  <nav>
+    <a href="/admin/">⚙️ Admin</a>
+    <a href="/api/">💊 Medicines</a>
+    <a href="/assistant/">🤖 Assistant</a>
+    <a href="/sos/">🚨 SOS</a>
+    <a href="/reports/">📊 Reports</a>
+    <a href="#">🗓 Calendar</a>
+  </nav>
+
+  <footer>
+    © 2025 ElderCare AI Project
+  </footer>
+</body>
+</html>

@@ -1,0 +1,20 @@
+# Core
+Django==5.1.1
+djangorestframework==3.15.2
+
+# Optional: Task queue (for reminders, scheduling, background jobs)
+celery==5.4.0
+redis==5.0.1
+
+# For CORS (if you connect a mobile/web frontend separately)
+django-cors-headers==4.3.1
+
+# For environment variables
+python-decouple==3.8
+
+# Database drivers (SQLite built-in, but adding PostgreSQL if needed)
+psycopg2-binary==2.9.9
+
+# Dev tools
+black==24.8.0
+isort==5.13.2
