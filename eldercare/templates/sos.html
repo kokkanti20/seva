@@ -1,0 +1,92 @@
+<!DOCTYPE html>
+<html>
+<head>
+  <meta charset="utf-8"/>
+  <meta name="viewport" content="width=device-width,initial-scale=1"/>
+  <title>SOS</title>
+  <style>
+    body { font-family: system-ui, Arial, sans-serif; margin:0; background:#f8fafc; }
+    header { background:#dc2626; color:#fff; padding:1rem; text-align:center; }
+    .wrap { padding:1.25rem; max-width:600px; margin:0 auto; }
+    .card { background:#fff; border-radius:14px; box-shadow:0 6px 18px rgba(0,0,0,.08); padding:1.5rem; text-align:center; }
+    .btn-sos {
+      width:100%; height:64px; font-size:1.4rem; font-weight:800; letter-spacing:.5px;
+      background:#ef4444; color:#fff; border:none; border-radius:14px; cursor:pointer;
+      box-shadow:0 10px 24px rgba(239,68,68,.35);
+    }
+    .btn-sos:active { transform:scale(.98); }
+    .hint { color:#374151; font-size:.95rem; margin-top:1rem; }
+    .ok { color:#16a34a; margin-top:1rem; font-weight:600; }
+    .err { color:#b91c1c; margin-top:1rem; font-weight:600; }
+    textarea { width:100%; height:80px; padding:.75rem; border-radius:12px; border:1px solid #e5e7eb; margin-bottom:1rem; }
+  </style>
+</head>
+<body>
+  <header><h1>🚨 SOS</h1><div>Notify family immediately</div></header>
+  <div class="wrap">
+    <div class="card">
+      <textarea id="note" placeholder="Optional note for family (e.g., 'I feel dizzy')"></textarea>
+      <button class="btn-sos" id="btn">SEND SOS</button>
+      <div id="msg" class="hint">We’ll ask for your location to include a Google Maps link.</div>
+    </div>
+  </div>
+
+  <script>
+    async function postSOS(lat, lng, note) {
+      const form = new FormData();
+      form.append("lat", lat ?? "");
+      form.append("lng", lng ?? "");
+      form.append("note", note ?? "");
+      // CSRF token (Django template context adds csrftoken cookie)
+      function getCookie(name) {
+        const value = `; ${document.cookie}`;
+        const parts = value.split(`; ${name}=`);
+        if (parts.length === 2) return parts.pop().split(";").shift();
+      }
+      const csrf = getCookie("csrftoken");
+
+      const res = await fetch("/sos/send/", {
+        method: "POST",
+        headers: { "X-CSRFToken": csrf },
+        body: form
+      });
+
+      return res.json();
+    }
+
+    document.getElementById("btn").addEventListener("click", async () => {
+      const msgBox = document.getElementById("msg");
+      const note = document.getElementById("note").value.trim();
+      msgBox.className = "hint";
+      msgBox.textContent = "Getting location…";
+
+      function getGeo() {
+        return new Promise((resolve) => {
+          if (!navigator.geolocation) return resolve({});
+          navigator.geolocation.getCurrentPosition(
+            pos => resolve({lat: pos.coords.latitude, lng: pos.coords.longitude}),
+            _ => resolve({})  // ignore errors, still send SOS
+          );
+        });
+      }
+
+      const {lat, lng} = await getGeo();
+      msgBox.textContent = "Sending alert…";
+
+      try {
+        const data = await postSOS(lat, lng, note);
+        if (data.ok) {
+          msgBox.className = "ok";
+          msgBox.textContent = "SOS sent to your contacts.";
+        } else {
+          msgBox.className = "err";
+          msgBox.textContent = "Could not send SOS (no contacts?).";
+        }
+      } catch (e) {
+        msgBox.className = "err";
+        msgBox.textContent = "Error sending SOS. Please try again.";
+      }
+    });
+  </script>
+</body>
+</html>

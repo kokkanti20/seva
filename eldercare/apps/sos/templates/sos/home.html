@@ -1,0 +1,18 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>SOS Alert</title>
+</head>
+<body style="font-family: Arial, sans-serif; text-align: center; margin-top: 50px;">
+  <h1>🚨 SOS</h1>
+  <p>Notify family immediately</p>
+
+  <form method="POST" action="{% url 'sos_send' %}">
+    {% csrf_token %}
+    <textarea name="note" placeholder="Add a message..." rows="4" cols="40"></textarea><br><br>
+    <button type="submit" style="padding: 10px 20px; background: red; color: white; border: none; border-radius: 5px;">Send SOS</button>
+  </form>
+</body>
+</html>

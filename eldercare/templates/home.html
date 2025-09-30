@@ -20,25 +20,37 @@
       padding: 1.5rem;
       text-align: center;
     }
+    header h1 {
+      margin: 0;
+      font-size: 2rem;
+    }
+    header p {
+      margin: 0.3rem 0 0;
+      font-size: 1rem;
+      opacity: 0.9;
+    }
     nav {
       display: grid;
-      grid-template-columns: repeat(2, 1fr);
+      grid-template-columns: repeat(auto-fit, minmax(140px, 1fr));
       gap: 1rem;
       padding: 1rem;
       flex-grow: 1;
     }
     nav a {
-      display: block;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      flex-direction: column;
       background: white;
       border-radius: 12px;
-      padding: 2rem;
+      padding: 2rem 1rem;
       text-align: center;
       text-decoration: none;
       color: #0077cc;
       font-weight: bold;
-      font-size: 1.2rem;
+      font-size: 1.1rem;
       box-shadow: 0 4px 6px rgba(0,0,0,0.1);
-      transition: 0.2s;
+      transition: all 0.2s ease-in-out;
     }
     nav a:hover {
       background: #0077cc;
@@ -49,6 +61,7 @@
       text-align: center;
       padding: 1rem;
       background: #eee;
+      font-size: 0.9rem;
     }
   </style>
 </head>
@@ -59,12 +72,12 @@
   </header>
 
   <nav>
-    <a href="/admin/">⚙️ Admin</a>
+    <a href="{% url 'admin:index' %}">⚙️ Admin</a>
     <a href="/api/">💊 Medicines</a>
     <a href="/assistant/">🤖 Assistant</a>
     <a href="/sos/">🚨 SOS</a>
     <a href="/reports/">📊 Reports</a>
-    <a href="#">🗓 Calendar</a>
+    <a href="/calendarapp/">🗓 Calendar</a>
   </nav>
 
   <footer>

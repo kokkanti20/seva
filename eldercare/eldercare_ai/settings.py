@@ -6,6 +6,30 @@ SECRET_KEY = os.environ.get('SECRET_KEY', 'dev-secret-key')
 DEBUG = True
 ALLOWED_HOSTS = ["*"]
 
+# --- Email (DEV) ---
+EMAIL_BACKEND = "django.core.mail.backends.console.EmailBackend"
+DEFAULT_FROM_EMAIL = "alerts@eldercare.local"
+
+# --- Email (PROD EXAMPLE via Gmail) ---
+# EMAIL_BACKEND = "django.core.mail.backends.smtp.EmailBackend"
+# EMAIL_HOST = "smtp.gmail.com"
+# EMAIL_PORT = 587
+# EMAIL_USE_TLS = True
+# EMAIL_HOST_USER = os.environ.get("SMTP_USER")  # youraddress@gmail.com
+# EMAIL_HOST_PASSWORD = os.environ.get("SMTP_PASS")  # Gmail App Password
+# DEFAULT_FROM_EMAIL = EMAIL_HOST_USER
+
+# Email-to-SMS gateway domains (US carriers)
+SMS_GATEWAYS = {
+    "att": "txt.att.net",
+    "verizon": "vtext.com",
+    "tmobile": "tmomail.net",
+    "sprint": "messaging.sprintpcs.com",
+    "googlefi": "msg.fi.google.com",
+    "uscellular": "email.uscc.net",
+}
+
+
 INSTALLED_APPS = [
     "django.contrib.admin",
     "django.contrib.auth",
@@ -70,3 +94,4 @@ STATIC_ROOT = BASE_DIR / "staticfiles"
 DEFAULT_AUTO_FIELD = "django.db.models.BigAutoField"
 
 EMAIL_BACKEND = "django.core.mail.backends.console.EmailBackend"
+DEFAULT_FROM_EMAIL = "sos@eldercare.ai"

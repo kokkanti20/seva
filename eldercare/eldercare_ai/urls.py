@@ -11,7 +11,7 @@ urlpatterns = [
     path("healthz/", lambda r: HttpResponse("OK")),
     path("api/", include("apps.meds.urls")),
     path("assistant/", include("apps.assistant.urls")),
-    path("sos/", include("apps.sos.urls")),
+    path("sos/", include("apps.sos.urls")),   # ✅ include sos urls
     path("reports/", include("apps.reports.urls")),
-    path("", home),  # ✅ Homepage
+    path("", home, name="home"),              # ✅ homepage
 ]
