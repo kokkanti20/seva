@@ -1,4 +1,5 @@
 from django.db import models
+from django.utils import timezone
 
 class Event(models.Model):
     title = models.CharField(max_length=200)
@@ -6,4 +7,7 @@ class Event(models.Model):
     date = models.DateField()
 
     def __str__(self):
-        return f"{self.title} on {self.date}"
+        return f"{self.title} ({self.date})"
+
+    class Meta:
+        ordering = ["date"]

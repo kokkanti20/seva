@@ -1,0 +1,46 @@
+<!DOCTYPE html>
+<html>
+<head>
+    <title>{{ month_name }} {{ year }} Calendar</title>
+    <style>
+        table { border-collapse: collapse; width: 100%; }
+        th, td { border: 1px solid #ddd; padding: 10px; text-align: center; }
+        .event { background: #d4edda; font-weight: bold; }
+    </style>
+</head>
+<body>
+    <h1>{{ month_name }} {{ year }}</h1>
+
+    <div>
+        <!-- Navigation -->
+        <a href="?year={{ year }}&month={{ month|add:"-1" }}">⬅ Prev</a> |
+        <a href="?year={{ year }}&month={{ month|add:"1" }}">Next ➡</a>
+    </div>
+
+    <table>
+        <tr>
+            {% for day in "Mon Tue Wed Thu Fri Sat Sun".split %}
+                <th>{{ day }}</th>
+            {% endfor %}
+        </tr>
+        <tr>
+        {% for day in month_days %}
+            {% if forloop.counter0|divisibleby:7 and not forloop.first %}
+                </tr><tr>
+            {% endif %}
+
+            <td class="{% if events|dictsort:"date"|first.date == day %}event{% endif %}">
+                {{ day.day }}
+                <ul>
+                    {% for e in events %}
+                        {% if e.date == day %}
+                            <li>{{ e.title }}</li>
+                        {% endif %}
+                    {% endfor %}
+                </ul>
+            </td>
+        {% endfor %}
+        </tr>
+    </table>
+</body>
+</html>

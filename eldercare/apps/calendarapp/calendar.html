@@ -1,0 +1,36 @@
+<!DOCTYPE html>
+<html>
+<head>
+    <title>Calendar Events</title>
+</head>
+<body>
+    <h1>Calendar</h1>
+
+    <h2>Past Year ({{ past_year }})</h2>
+    <ul>
+        {% for event in past_year_events %}
+            <li>{{ event.date }} - {{ event.title }}</li>
+        {% empty %}
+            <li>No events</li>
+        {% endfor %}
+    </ul>
+
+    <h2>Current Year ({{ current_year }})</h2>
+    <ul>
+        {% for event in current_year_events %}
+            <li>{{ event.date }} - {{ event.title }}</li>
+        {% empty %}
+            <li>No events</li>
+        {% endfor %}
+    </ul>
+
+    <h2>Next Year ({{ next_year }})</h2>
+    <ul>
+        {% for event in next_year_events %}
+            <li>{{ event.date }} - {{ event.title }}</li>
+        {% empty %}
+            <li>No events</li>
+        {% endfor %}
+    </ul>
+</body>
+</html>

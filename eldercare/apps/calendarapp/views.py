@@ -1,27 +1,27 @@
-from rest_framework import viewsets, permissions
-from .models import Appointment, Routine, Alert
-from .serializers import AppointmentSerializer, RoutineSerializer, AlertSerializer
+from django.shortcuts import render
+from datetime import date, datetime
+import calendar
+from .models import Event
 
-class BaseOwnedViewSet(viewsets.ModelViewSet):
-    permission_classes = [permissions.IsAuthenticated]
+def calendar_view(request):
+    today = date.today()
 
-    def get_queryset(self):
-        return self.model.objects.filter(user=self.request.user)
+    # Get year and month from query params, default is current year/month
+    year = int(request.GET.get("year", today.year))
+    month = int(request.GET.get("month", today.month))
 
-    def perform_create(self, serializer):
-        serializer.save(user=self.request.user)
+    # Calendar matrix for given month
+    cal = calendar.Calendar()
+    month_days = cal.itermonthdates(year, month)
 
-class AppointmentViewSet(BaseOwnedViewSet):
-    serializer_class = AppointmentSerializer
-    model = Appointment
-    queryset = Appointment.objects.all()
+    # Fetch events for this month
+    events = Event.objects.filter(date__year=year, date__month=month)
 
-class RoutineViewSet(BaseOwnedViewSet):
-    serializer_class = RoutineSerializer
-    model = Routine
-    queryset = Routine.objects.all()
-
-class AlertViewSet(BaseOwnedViewSet):
-    serializer_class = AlertSerializer
-    model = Alert
-    queryset = Alert.objects.all()
+    context = {
+        "year": year,
+        "month": month,
+        "month_name": calendar.month_name[month],
+        "month_days": month_days,
+        "events": events,
+    }
+    return render(request, "calendarapp/calendar_month.html", context)

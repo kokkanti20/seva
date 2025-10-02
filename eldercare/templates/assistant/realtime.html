@@ -1,82 +1,65 @@
-<!doctype html>
-<html>
+<!DOCTYPE html>
+<html lang="en">
 <head>
-  <meta charset="utf-8" />
-  <title>Realtime Voice</title>
-  <style>
-    body { font: 16px/1.5 system-ui, sans-serif; max-width: 680px; margin: 2rem auto; }
-    button { padding: .8rem 1.2rem; border-radius: 12px; border: 0; font-weight: 700; }
-  </style>
+    <meta charset="UTF-8">
+    <title>Realtime Voice Assistant</title>
 </head>
 <body>
-  <h1>Realtime Voice</h1>
-  <p>Click start, grant mic permission, and speak in any language.</p>
-  <button id="start">Start</button>
-  <button id="stop" disabled>Stop</button>
-  <audio id="ai-audio" autoplay></audio>
+    <h1>Realtime Voice Assistant</h1>
 
-  <script>
-    let pc, localStream;
+    <button id="startBtn">🎙 Start Recording</button>
+    <button id="stopBtn" disabled>⏹ Stop Recording</button>
+    <p id="status">Idle...</p>
 
-    const getCookie = (name) => {
-      const m = document.cookie.match('(^|;)\\s*' + name + '\\s*=\\s*([^;]+)');
-      return m ? m.pop() : '';
-    };
+    <h3>Assistant Reply</h3>
+    <p id="reply"></p>
+    <audio id="replyAudio" controls></audio>
 
-    async function start() {
-      // 1) Create PeerConnection and hook up remote audio
-      pc = new RTCPeerConnection();
-      const audioEl = document.getElementById('ai-audio');
-      pc.ontrack = (ev) => { audioEl.srcObject = ev.streams[0]; };
+    <script>
+        let mediaRecorder;
+        let audioChunks = [];
 
-      // 2) Capture microphone
-      localStream = await navigator.mediaDevices.getUserMedia({ audio: true });
-      localStream.getTracks().forEach(t => pc.addTrack(t, localStream));
+        const startBtn = document.getElementById("startBtn");
+        const stopBtn = document.getElementById("stopBtn");
+        const status = document.getElementById("status");
+        const reply = document.getElementById("reply");
+        const replyAudio = document.getElementById("replyAudio");
 
-      // Optional: a data channel for events/telemetry
-      pc.createDataChannel("oai-events");
+        startBtn.onclick = async () => {
+            const stream = await navigator.mediaDevices.getUserMedia({ audio: true });
+            mediaRecorder = new MediaRecorder(stream);
+            audioChunks = [];
 
-      // 3) Create an offer
-      const offer = await pc.createOffer();
-      await pc.setLocalDescription(offer);
+            mediaRecorder.ondataavailable = e => audioChunks.push(e.data);
 
-      // 4) Ask our Django backend for an ephemeral session (server uses real API key)
-      const tokenRes = await fetch("/assistant/realtime/session/", {
-        method: "POST",
-        headers: { "X-CSRFToken": getCookie("csrftoken") }
-      });
-      if (!tokenRes.ok) {
-        alert("Could not create session"); return;
-      }
-      const ephem = await tokenRes.json();  // includes ephem.client_secret.value
+            mediaRecorder.onstop = async () => {
+                const blob = new Blob(audioChunks, { type: "audio/wav" });
+                const formData = new FormData();
+                formData.append("audio", blob, "input.wav");
 
-      // 5) Send our SDP offer to OpenAI Realtime; get SDP answer back
-      const sdpRes = await fetch("https://api.openai.com/v1/realtime?model=gpt-4o-realtime-preview", {
-        method: "POST",
-        headers: {
-          "Authorization": `Bearer ${ephem.client_secret.value}`,
-          "Content-Type": "application/sdp"
-        },
-        body: offer.sdp
-      });
-      const answer = { type: "answer", sdp: await sdpRes.text() };
-      await pc.setRemoteDescription(answer);
+                status.innerText = "⏳ Sending to server...";
+                const res = await fetch("/assistant/realtime-api/", {
+                    method: "POST",
+                    body: formData
+                });
+                const data = await res.json();
 
-      // UI state
-      document.getElementById("start").disabled = true;
-      document.getElementById("stop").disabled = false;
-    }
+                reply.innerText = data.assistant_reply;
+                replyAudio.src = data.audio_url;
+                status.innerText = "✅ Done";
+            };
 
-    async function stop() {
-      try { localStream?.getTracks().forEach(t => t.stop()); } catch {}
-      try { pc?.getSenders().forEach(s => s.track && s.track.stop()); } catch {}
-      try { pc?.close(); } catch {}
-      document.getElementById("start").disabled = false;
-      document.getElementById("stop").disabled = true;
-    }
+            mediaRecorder.start();
+            status.innerText = "🎙 Recording...";
+            startBtn.disabled = true;
+            stopBtn.disabled = false;
+        };
 
-    document.getElementById("start").onclick = start;
-    document.getElementById("stop").onclick = stop;
-  </script>
+        stopBtn.onclick = () => {
+            mediaRecorder.stop();
+            startBtn.disabled = false;
+            stopBtn.disabled = true;
+        };
+    </script>
 </body>
 </html>
