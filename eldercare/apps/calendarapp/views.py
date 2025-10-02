@@ -1,20 +1,23 @@
-from django.shortcuts import render
-from datetime import date, datetime
+from datetime import date
 import calendar
-from .models import Event
+from django.shortcuts import render
+from .models import Event   # ✅ add this line
 
 def calendar_view(request):
     today = date.today()
-
-    # Get year and month from query params, default is current year/month
     year = int(request.GET.get("year", today.year))
     month = int(request.GET.get("month", today.month))
 
-    # Calendar matrix for given month
+    if month < 1:
+        month = 12
+        year -= 1
+    elif month > 12:
+        month = 1
+        year += 1
+
     cal = calendar.Calendar()
     month_days = cal.itermonthdates(year, month)
 
-    # Fetch events for this month
     events = Event.objects.filter(date__year=year, date__month=month)
 
     context = {

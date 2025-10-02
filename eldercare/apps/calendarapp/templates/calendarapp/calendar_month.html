@@ -1,0 +1,19 @@
+<!DOCTYPE html>
+<html>
+<head>
+    <title>Calendar - {{ month_name }} {{ year }}</title>
+</head>
+<body>
+    <h1>{{ month_name }} {{ year }}</h1>
+
+    <ul>
+        {% for event in events %}
+            <li>
+                {{ event.date }} - {{ event.title }}
+            </li>
+        {% empty %}
+            <li>No events this month.</li>
+        {% endfor %}
+    </ul>
+</body>
+</html>
