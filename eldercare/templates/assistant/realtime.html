@@ -1,0 +1,82 @@
+<!doctype html>
+<html>
+<head>
+  <meta charset="utf-8" />
+  <title>Realtime Voice</title>
+  <style>
+    body { font: 16px/1.5 system-ui, sans-serif; max-width: 680px; margin: 2rem auto; }
+    button { padding: .8rem 1.2rem; border-radius: 12px; border: 0; font-weight: 700; }
+  </style>
+</head>
+<body>
+  <h1>Realtime Voice</h1>
+  <p>Click start, grant mic permission, and speak in any language.</p>
+  <button id="start">Start</button>
+  <button id="stop" disabled>Stop</button>
+  <audio id="ai-audio" autoplay></audio>
+
+  <script>
+    let pc, localStream;
+
+    const getCookie = (name) => {
+      const m = document.cookie.match('(^|;)\\s*' + name + '\\s*=\\s*([^;]+)');
+      return m ? m.pop() : '';
+    };
+
+    async function start() {
+      // 1) Create PeerConnection and hook up remote audio
+      pc = new RTCPeerConnection();
+      const audioEl = document.getElementById('ai-audio');
+      pc.ontrack = (ev) => { audioEl.srcObject = ev.streams[0]; };
+
+      // 2) Capture microphone
+      localStream = await navigator.mediaDevices.getUserMedia({ audio: true });
+      localStream.getTracks().forEach(t => pc.addTrack(t, localStream));
+
+      // Optional: a data channel for events/telemetry
+      pc.createDataChannel("oai-events");
+
+      // 3) Create an offer
+      const offer = await pc.createOffer();
+      await pc.setLocalDescription(offer);
+
+      // 4) Ask our Django backend for an ephemeral session (server uses real API key)
+      const tokenRes = await fetch("/assistant/realtime/session/", {
+        method: "POST",
+        headers: { "X-CSRFToken": getCookie("csrftoken") }
+      });
+      if (!tokenRes.ok) {
+        alert("Could not create session"); return;
+      }
+      const ephem = await tokenRes.json();  // includes ephem.client_secret.value
+
+      // 5) Send our SDP offer to OpenAI Realtime; get SDP answer back
+      const sdpRes = await fetch("https://api.openai.com/v1/realtime?model=gpt-4o-realtime-preview", {
+        method: "POST",
+        headers: {
+          "Authorization": `Bearer ${ephem.client_secret.value}`,
+          "Content-Type": "application/sdp"
+        },
+        body: offer.sdp
+      });
+      const answer = { type: "answer", sdp: await sdpRes.text() };
+      await pc.setRemoteDescription(answer);
+
+      // UI state
+      document.getElementById("start").disabled = true;
+      document.getElementById("stop").disabled = false;
+    }
+
+    async function stop() {
+      try { localStream?.getTracks().forEach(t => t.stop()); } catch {}
+      try { pc?.getSenders().forEach(s => s.track && s.track.stop()); } catch {}
+      try { pc?.close(); } catch {}
+      document.getElementById("start").disabled = false;
+      document.getElementById("stop").disabled = true;
+    }
+
+    document.getElementById("start").onclick = start;
+    document.getElementById("stop").onclick = stop;
+  </script>
+</body>
+</html>

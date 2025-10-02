@@ -1,0 +1,40 @@
+<!DOCTYPE html>
+<html>
+<head>
+  <title>Voice Assistant</title>
+</head>
+<body>
+  <h2>🎤 Speak to ElderCare AI</h2>
+  <button onclick="startRecording()">Start</button>
+  <button onclick="stopRecording()">Stop</button>
+  <audio id="reply" controls></audio>
+
+  <script>
+    let mediaRecorder;
+    let chunks = [];
+
+    async function startRecording() {
+      let stream = await navigator.mediaDevices.getUserMedia({ audio: true });
+      mediaRecorder = new MediaRecorder(stream);
+      mediaRecorder.ondataavailable = e => chunks.push(e.data);
+      mediaRecorder.start();
+    }
+
+    async function stopRecording() {
+      mediaRecorder.stop();
+      mediaRecorder.onstop = async () => {
+        let blob = new Blob(chunks, { type: "audio/wav" });
+        let formData = new FormData();
+        formData.append("audio", blob, "input.wav");
+
+        let res = await fetch("/assistant/voice/", { method: "POST", body: formData });
+        let data = await res.json();
+
+        console.log("Assistant:", data.assistant_reply);
+
+        document.getElementById("reply").src = data.audio_file;
+      };
+    }
+  </script>
+</body>
+</html>

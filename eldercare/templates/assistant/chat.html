@@ -1,0 +1,48 @@
+<!DOCTYPE html>
+<html>
+<head>
+  <title>Voice Assistant</title>
+</head>
+<body>
+  <h1>🎤 Voice Assistant (Free Whisper + Ollama + gTTS)</h1>
+  <button id="startBtn">Start Recording</button>
+  <button id="stopBtn">Stop</button>
+  <p id="response"></p>
+  <audio id="replyAudio" controls></audio>
+
+<script>
+let mediaRecorder, audioChunks = [];
+
+document.getElementById("startBtn").onclick = async () => {
+  let stream = await navigator.mediaDevices.getUserMedia({ audio: true });
+  mediaRecorder = new MediaRecorder(stream);
+  mediaRecorder.start();
+  audioChunks = [];
+
+  mediaRecorder.ondataavailable = event => {
+    audioChunks.push(event.data);
+  };
+};
+
+document.getElementById("stopBtn").onclick = () => {
+  mediaRecorder.stop();
+  mediaRecorder.onstop = async () => {
+    let blob = new Blob(audioChunks, { type: "audio/wav" });
+    let formData = new FormData();
+    formData.append("audio", blob, "voice.wav");
+
+    let response = await fetch("/assistant/voice/", {
+      method: "POST",
+      body: formData
+    });
+
+    let data = await response.json();
+    document.getElementById("response").innerText = data.assistant_reply;
+    if (data.audio_file) {
+      document.getElementById("replyAudio").src = data.audio_file;
+    }
+  };
+};
+</script>
+</body>
+</html>

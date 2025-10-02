@@ -95,3 +95,10 @@ DEFAULT_AUTO_FIELD = "django.db.models.BigAutoField"
 
 EMAIL_BACKEND = "django.core.mail.backends.console.EmailBackend"
 DEFAULT_FROM_EMAIL = "sos@eldercare.ai"
+
+MEDIA_URL = "/media/"
+MEDIA_ROOT = BASE_DIR / "media"
+
+# Optional defaults so you don’t repeat strings everywhere
+OLLAMA_MODEL = "mistral"  # or "llama3", "qwen2.5", etc.
+TTS_MODEL = "tts_models/multilingual/multi-dataset/xtts_v2"

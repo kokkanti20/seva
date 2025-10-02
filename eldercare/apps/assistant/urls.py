@@ -1,7 +1,7 @@
 from django.urls import path
-from .views import parse_med, weekly_summary
+from .views_voice import voice_assistant, tts_demo
 
 urlpatterns = [
-    path("parse_med/", parse_med),
-    path("weekly_summary/<int:user_id>/", weekly_summary),
+    path("voice/", voice_assistant, name="voice_assistant"),
+    path("tts-demo/", tts_demo, name="tts_demo"),
 ]
